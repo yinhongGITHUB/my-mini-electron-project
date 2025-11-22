@@ -94,6 +94,8 @@ defer：下载完等 DOM 解析完再执行，不阻塞页面，**推荐**。
 
 #### 什么是 Chromium？
 
+Chromium 是一个完整开源浏览器项目，包括浏览器界面、功能、渲染引擎、JS 引擎、网络栈等，是 Chrome、Edge、Electron 等项目的基础。
+
 - 主要组成部分
 
 1. Blink 渲染引擎：负责网页的解析与渲染，最初基于 WebKit，后由 Google 分支为 Blink。
@@ -104,6 +106,6 @@ defer：下载完等 DOM 解析完再执行，不阻塞页面，**推荐**。
 
 Chromium 是一个开源浏览器项目，是 Google Chrome 浏览器的“内核”和基础代码库。Chrome 浏览器就是在 Chromium 的基础上开发的。
 
-Electron 的web渲染内核也是Chromium？
+Electron 的 web 渲染内核也是 Chromium？
 
 持续学习中......
