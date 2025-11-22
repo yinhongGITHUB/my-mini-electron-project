@@ -39,5 +39,3 @@ Electron 是一个使用 JavaScript、HTML 和 CSS 构建*桌面应用程序*的
 3. 移动应用程序
    用 Cordova、Capacitor、React Native、UniApp 等，把 Web 技术打包成 iOS/Android 应用。
    例子：钉钉、支付宝小程序。
-
-待学习......
