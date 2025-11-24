@@ -1,0 +1,15 @@
+{
+  "name": "my-mini-electron-project",
+  "version": "1.0.0",
+  "description": "Electron 是一个使用 JavaScript、HTML 和 CSS 构建*桌面应用程序*的框架。",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "electron": "^39.2.3"
+  }
+}

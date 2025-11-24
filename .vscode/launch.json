@@ -1,0 +1,33 @@
+{
+  "version": "0.2.0", // 配置文件版本号，VS Code 固定写法
+  "compounds": [ // 复合启动配置，可以同时启动多个调试目标
+    {
+      "name": "Main + renderer", // 复合启动的名字
+      "configurations": ["Main", "Renderer"], // 启动 Main 和 Renderer 两个配置
+      "stopAll": true // 停止时会一起停止所有
+    }
+  ],
+  "configurations": [
+     // 具体的调试配置数组
+    {
+      "name": "Renderer", // 配置名称，显示在调试面板
+      "port": 9222, // 连接的端口号（Chrome 远程调试端口）
+      "request": "attach", // 以“附加”方式连接到已运行的进程
+      "type": "chrome", // 使用 Chrome 调试器
+      "webRoot": "${workspaceFolder}" // 网页根目录为当前工作区
+    },
+    {
+      "name": "Main", // 配置名称
+      "type": "node", // 使用 Node.js 调试器
+      "request": "launch", // 以“启动”方式运行
+      "cwd": "${workspaceFolder}", // 当前工作目录为工作区根目录
+      "runtimeExecutable": "${workspaceFolder}/node_modules/.bin/electron", // Electron 可执行文件路径（Linux/macOS）
+      "windows": {
+        "runtimeExecutable": "${workspaceFolder}/node_modules/.bin/electron.cmd" // Windows 下的 Electron 可执行文件
+      },
+      "args": [".", "--remote-debugging-port=9222"], // 启动参数：当前目录和远程调试端口
+      "outputCapture": "std", // 捕获标准输出
+      "console": "integratedTerminal" // 在 VS Code 集成终端中运行
+    }
+  ]
+}
