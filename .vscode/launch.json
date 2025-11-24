@@ -31,3 +31,23 @@
     }
   ]
 }
+
+/**
+  *  configurations
+  * 作用：定义一个或多个调试配置，每个配置描述如何启动或附加到一个进程。
+  * 选项（常见字段）：
+  * name：配置名称，显示在调试面板。
+  * type：调试器类型，如 node、chrome、pwa-node、pwa-chrome 等。
+  * request：调试请求类型，常用 "launch"（启动新进程）或 "attach"（附加到已运行进程）。
+  * program：要运行的主文件路径（如 main.js）。
+  * cwd：当前工作目录。
+  * runtimeExecutable：要执行的可执行文件路径（如 electron）。
+  * args：传递给程序的参数（数组）。
+  * port：附加时要连接的端口号（如 9222）。
+  * webRoot：网页根目录（调试前端时用）。
+  * outputCapture：捕获输出方式（如 std）。
+  * console：调试时用哪个终端（如 integratedTerminal）。
+  * env：环境变量（对象）。
+  * sourceMaps：是否启用源码映射（布尔值）。
+  * windows / linux / osx：针对不同操作系统的专用配置。
+  */
