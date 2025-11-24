@@ -1,4 +1,5 @@
-const { app, BrowserWindow } = require("electron");
+const { app, BrowserWindow, ipcMain } = require("electron");
+const path = require("path");
 
 const createWindow = () => {
   // BrowserWindow 是 Electron 提供的一个类，用于创建和控制应用中的原生浏览器窗口。
@@ -7,16 +8,23 @@ const createWindow = () => {
   const win = new BrowserWindow({
     width: 800,
     height: 600,
+    // 指定预加载脚本的路径
+    webPreferences: {
+      preload: path.join(__dirname, "preload.js"),
+    },
   });
 
+  // win是一个浏览器窗口的实例化对象，表示此时会显示一个窗口，内容是index.html文件的内容
   win.loadFile("index.html");
 };
 
 // whenReady函数：当 Electron 完成初始化，可以创建窗口时。
 app.whenReady().then(() => {
+  ipcMain.handle("ping", () => "pong");
   createWindow();
   app.on("activate", () => {
     if (BrowserWindow.getAllWindows().length === 0) {
+      // 兼容苹果，在没有窗口打开时点击 Dock 图标会重新创建一个窗口
       createWindow();
     }
   });

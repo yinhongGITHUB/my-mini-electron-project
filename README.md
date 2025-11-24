@@ -108,4 +108,126 @@ Chromium 是一个开源浏览器项目，是 Google Chrome 浏览器的“内�
 
 Electron 的 web 渲染内核也是 Chromium？
 
+#### 关于 Electron 的进程
+
+- 主进程（Main Process）
+  负责应用的生命周期管理、窗口创建与管理、与操作系统的交互等。
+  只有一个，运行在 Node.js 环境下。
+  你写的 main.js 就是主进程脚本。
+  可以访问 Node.js 的全部 API 和 Electron 的主进程 API。
+
+- 渲染进程（Renderer Process）
+  每个窗口（BrowserWindow 是一个构造函数，可以实例化出多个实例对象）对应一个渲染进程。
+  负责显示网页内容，类似于浏览器中的每个标签页。
+  运行在浏览器环境下，可以使用 DOM、JS、CSS，但默认不能直接访问 Node.js API（除非开启 nodeIntegration 或通过 preload 脚本暴露接口）。
+
+- GPU 进程（GPU Process）
+  专门负责硬件加速相关的任务，如页面渲染、视频解码等。它由 Chromium 自动管理，提升图形性能。
+
+- Utility 进程（实用进程）
+  用于处理特定的后台任务，比如网络服务、音频服务等。它们是 Chromium 的一部分，帮助分担主进程压力。
+
+- Crash Reporter 进程
+  用于收集和上报应用崩溃信息，便于开发者排查问题。
+
+- Node.js Worker 线程/进程
+  如果你在主进程或渲染进程中使用了 Node.js 的 worker_threads 或 child_process，也会额外产生子线程或子进程，用于执行耗时任务。
+
+#### 关于预加载环境
+
+##### 预加载环境是什么？
+
+1. 预加载环境（preload environment）是 Electron 独有的一种运行环境，介于主进程和渲染进程之间。
+
+2. 预加载脚本（preload.js）在渲染进程的页面加载前，由主进程通过 webPreferences.preload 指定并自动执行。
+
+3. 预加载脚本运行在渲染进程的上下文中，但拥有部分 Node.js 能力（如 require、process 等），同时可以访问 4. Electron 的 contextBridge 和 ipcRenderer。
+
+4. 预加载环境是“隔离的”，即它和页面脚本（renderer.js）之间有安全边界，页面脚本默认无法直接访问 Node.js API。
+
+##### 为什么需要预加载环境？
+
+1. 安全性：直接在渲染进程中开放 Node.js API，网页就能随意操作本地文件、系统资源，极易被恶意代码利用。预加载环境可以只暴露有限、受控的 API 给页面，极大提升安全性。
+
+2. 桥接作用：预加载脚本可以用 contextBridge.exposeInMainWorld 把主进程或 Node.js 的部分功能安全地暴露到 window 对象上，供前端页面调用。
+
+3. 灵活性：你可以自定义暴露哪些方法、数据，既能满足业务需求，又能防止页面脚本越权访问敏感资源。
+
+4. 防止重名变量的定义 
+
+##### 有一点非常值得注意：contextBridge.exposeInMainWorld("versions", ...) 会在页面的 window 上挂载一个只读的 versions 属性，页面脚本（renderer.js）可以读取和调用，但不能直接修改或覆盖它。
+
+#### 关于进程间的通信 (IPC)
+
+1. **主进程**向**渲染进程**通信
+
+流程简介：主进程 ipcMain.handle 注册 → 预渲染 ipcRenderer.invoke 拿并再次注册 → 渲染进程再次拿预渲染注册的
+
+主进程环境（main.js）
+
+```js
+// main.js
+app.whenReady().then(() => {
+  // 主进程利用**ipcMain.handle**注册一个名为ping的处理器
+  ipcMain.handle("ping", () => "pong");
+  createWindow();
+});
+```
+
+预加载环境 的 预加载脚本（preload.js）
+
+```js
+// preload.js
+contextBridge.exposeInMainWorld("versions", {
+  // 预加载环境利用**ipcRenderer.invoke**把名为ping的处理器注册到window的全局对象上面
+  ping: () => ipcRenderer.invoke("ping"),
+});
+```
+
+渲染进程环境 的 页面脚本（renderer.js）
+
+```js
+// renderer.js
+// 注意：返回的是一个promise
+window.versions.ping().then((result) => {
+  console.log(result); // "pong"
+});
+```
+
+2. **渲染进程**向**主进程**通信
+
+流程简介：渲染进程触发一个预加载注册的处理器函数 → 预加载 ipcRenderer.send 注册一个处理器函数 → 主进程 ipcMain.on 监听预加载注册的处理器函数
+
+主进程环境（main.js）
+
+```js
+// main.js
+app.whenReady().then(() => {
+  // 主进程利用**ipcMain.on**注册一个名为ping的处理器函数
+  ipcMain.on("ping", (event, arg) => {
+    console.log(arg); // arg就是渲染进程传来的数据
+  });
+  createWindow();
+});
+```
+
+预加载环境 的 预加载脚本（preload.js）
+
+```js
+// preload.js
+contextBridge.exposeInMainWorld("versions", {
+  // 预加载环境利用**ipcRenderer.send**把名为ping的处理器注册到window的全局对象上面
+  sendEvent: (arg) => ipcRenderer.send("ping", arg), // arg就是渲染进程传来的数据
+});
+```
+
+渲染进程环境 的 页面脚本（renderer.js）
+
+```js
+// renderer.js
+window.versions.sendEvent("我是渲染进程传进来的数据");
+```
+
+注意：我们使用了一个辅助函数（sendEvent、ping）来包裹 ipcRenderer.invoke('ping') 调用，而并非直接通过 contextBridge 暴露 ipcRenderer 模块。 你永远都不会想要通过预加载直接暴露整个 ipcRenderer 模块。 这将使得你的渲染器能够直接向主进程发送任意的 IPC 信息，会使得其成为恶意代码最强有力的攻击媒介。
+
 持续学习中......
