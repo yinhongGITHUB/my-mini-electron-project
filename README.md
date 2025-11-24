@@ -153,8 +153,6 @@ Electron 的 web 渲染内核也是 Chromium？
 
 3. 灵活性：你可以自定义暴露哪些方法、数据，既能满足业务需求，又能防止页面脚本越权访问敏感资源。
 
-4. 防止重名变量的定义 
-
 ##### 有一点非常值得注意：contextBridge.exposeInMainWorld("versions", ...) 会在页面的 window 上挂载一个只读的 versions 属性，页面脚本（renderer.js）可以读取和调用，但不能直接修改或覆盖它。
 
 #### 关于进程间的通信 (IPC)
