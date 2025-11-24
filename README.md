@@ -1,6 +1,7 @@
 ### Electron
 
 Electron 是一个使用 JavaScript、HTML 和 CSS 构建*桌面应用程序*的框架。
+Electron：主要用于桌面端（Windows、macOS、Linux）跨平台开发，不支持移动端（Android、iOS）。
 
 ##### 文档：https://www.electronjs.org/zh/docs/latest/
 
