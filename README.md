@@ -228,4 +228,37 @@ window.versions.sendEvent("我是渲染进程传进来的数据");
 
 注意：我们使用了一个辅助函数（sendEvent、ping）来包裹 ipcRenderer.invoke('ping') 调用，而并非直接通过 contextBridge 暴露 ipcRenderer 模块。 你永远都不会想要通过预加载直接暴露整个 ipcRenderer 模块。 这将使得你的渲染器能够直接向主进程发送任意的 IPC 信息，会使得其成为恶意代码最强有力的攻击媒介。
 
-持续学习中......
+#### 关于打包----Electron Forge
+
+##### 打包命令
+
+```js
+
+// 1. 安装 forge 工具
+// 安装 Electron Forge 的命令行工具到开发依赖。这样你可以在本地项目中直接使用 forge 相关命令，保证团队和 CI 环境一致。
+npm install --save-dev @electron-forge/cli
+
+// 2. 配置 forge 环境
+// 把你的现有 Electron 项目升级/转换为 Electron Forge 管理的项目。它会自动添加 forge 配置文件、安装打包和发布所需依赖，让项目支持一键打包、发布等功能。
+npx electron-forge import
+
+// 3. 打包生成安装包
+// 用 Electron Forge 打包你的应用，生成可分发的安装包（如 .exe、.dmg 等），让用户可以直接安装和运行你的桌面应用。
+npm run make
+
+```
+
+##### 打包需要注意的点
+
+1. 默认行为：Electron Forge 在 Windows 系统下默认只为当前平台和当前架构（如 win32-x64）打包。不会自动为其它平台（如 macOS、Linux）或其它架构（如 x86）生成包。
+
+2. 跨平台打包限制：打包 macOS 应用，必须在 macOS 系统上操作；打包 Linux 应用，推荐在 Linux 上操作。Electron 官方不支持在 Windows 上直接打包 mac 或 linux 的安装包。
+
+3. 在windows打x86（32位）包：如果你想打 32 位包，需要在 forge.config.js 里配置 arch，或在命令行加参数，electron-forge make --arch=ia32 想打64位的就用electron-forge make --arch=x64
+
+##### 那么如何才能跨平台打包呢
+
+原因：目前没有任何官方或第三方工具可以让你在 Windows 电脑上直接打包出 macOS 的 .dmg 或 .app 安装包。
+原因是 macOS 的打包和签名依赖于 macOS 系统的底层工具（如 Xcode、codesign），这些只能在 Mac 上运行。
+
+解决办法：云构建服务（如 GitHub Actions、Travis CI）在 macOS runner 上打包。
