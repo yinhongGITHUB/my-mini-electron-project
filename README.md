@@ -262,3 +262,9 @@ npm run make
 原因是 macOS 的打包和签名依赖于 macOS 系统的底层工具（如 Xcode、codesign），这些只能在 Mac 上运行。
 
 解决办法：云构建服务（如 GitHub Actions、Travis CI）在 macOS runner 上打包。
+
+#### 关于启动项解释
+
+- 运行 npm run package 只会生成 out/my-mini-electron-project-win32-x64 这个“绿色版/便携版”目录。
+
+- 运行 npm run make 会先生成 out/my-mini-electron-project-win32-x64 目录（如果还没有），然后在 out/make/ 下生成安装包（如 Setup.exe、nupkg 等）。
